@@ -74,6 +74,93 @@
   </table>
 </section>
 
+<hr>
+
+<h1>Purchase Orders</h1>
+
+<section id="po-form-section">
+  <h2 id="po-form-title">Add purchase order</h2>
+  <form id="po-form">
+    <input type="hidden" id="po-id">
+    <label>PO Number <input id="po-number" required></label>
+    <label>Supplier
+      <select id="po-supplier-select" required>
+        <option value="">-- select supplier --</option>
+      </select>
+    </label>
+    <label>Order date <input id="po-order-date" type="date" required></label>
+    <label>Notes <input id="po-notes"></label>
+
+    <h3>Items</h3>
+    <table id="po-items-table">
+      <thead>
+        <tr><th>Product</th><th>Ordered Qty</th><th>Unit Price</th><th></th></tr>
+      </thead>
+      <tbody id="po-items-body"></tbody>
+    </table>
+    <button type="button" id="po-add-item-btn">+ Add item</button>
+
+    <div>
+      <button type="submit" id="po-submit-btn">Save</button>
+      <button type="button" id="po-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="po-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>PO Number</th><th>Supplier</th><th>Order Date</th><th>Status</th><th>Items</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="po-table-body"></tbody>
+  </table>
+</section>
+
+<hr>
+
+<h1>Goods Received Notes (GRN)</h1>
+
+<section id="grn-form-section">
+  <h2 id="grn-form-title">Add GRN</h2>
+  <form id="grn-form">
+    <input type="hidden" id="grn-id">
+    <label>GRN Number <input id="grn-number" required></label>
+    <label>Purchase Order
+      <select id="grn-po-select" required>
+        <option value="">-- select purchase order --</option>
+      </select>
+    </label>
+    <label>Received date <input id="grn-received-date" type="date" required></label>
+    <label>Received by <input id="grn-received-by"></label>
+
+    <h3>Items to receive</h3>
+    <table id="grn-items-table">
+      <thead>
+        <tr><th>Product</th><th>Ordered</th><th>Already received</th><th>Receive now</th></tr>
+      </thead>
+      <tbody id="grn-items-body"></tbody>
+    </table>
+
+    <div>
+      <button type="submit" id="grn-submit-btn">Save</button>
+      <button type="button" id="grn-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="grn-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>GRN Number</th><th>PO Number</th><th>Received Date</th><th>Received By</th><th>Items</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="grn-table-body"></tbody>
+  </table>
+</section>
+
 <script src="app.js"></script>
 </body>
 </html>

@@ -38,6 +38,46 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(PurchaseOrderNotFoundException.class)
+    public ResponseEntity<Object> handlePoNotFound(PurchaseOrderNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicatePoNumberException.class)
+    public ResponseEntity<Object> handleDuplicatePoNumber(DuplicatePoNumberException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(PurchaseOrderInUseException.class)
+    public ResponseEntity<Object> handlePoInUse(PurchaseOrderInUseException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPurchaseOrderStatusException.class)
+    public ResponseEntity<Object> handleInvalidPoStatus(InvalidPurchaseOrderStatusException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(GrnNotFoundException.class)
+    public ResponseEntity<Object> handleGrnNotFound(GrnNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateGrnNumberException.class)
+    public ResponseEntity<Object> handleDuplicateGrnNumber(DuplicateGrnNumberException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(OverReceiptException.class)
+    public ResponseEntity<Object> handleOverReceipt(OverReceiptException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
