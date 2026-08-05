@@ -139,3 +139,17 @@ button[data-action="delete"] {
   background: #dc2626;
 }
 button[data-action="delete"]:hover { background: #b91c1c; }
+
+/* Table-embedded inputs (PO/GRN item rows) should size to their column,
+   not inherit the fixed 260px width meant for the main form fields. */
+#po-items-table input,
+#po-items-table select,
+#grn-items-table input {
+  width: auto;
+  max-width: 140px;
+}
+
+#po-items-table td,
+#grn-items-table td {
+  white-space: nowrap;
+}
