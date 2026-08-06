@@ -140,16 +140,37 @@ button[data-action="delete"] {
 }
 button[data-action="delete"]:hover { background: #b91c1c; }
 
-/* Table-embedded inputs (PO/GRN item rows) should size to their column,
-   not inherit the fixed 260px width meant for the main form fields. */
+/* ---- PO / GRN item tables: fixed column widths so inputs don't stretch ---- */
+
+#po-items-table,
+#grn-items-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#po-items-table th:nth-child(1),
+#po-items-table td:nth-child(1) { width: 45%; }
+#po-items-table th:nth-child(2),
+#po-items-table td:nth-child(2) { width: 15%; }
+#po-items-table th:nth-child(3),
+#po-items-table td:nth-child(3) { width: 15%; }
+#po-items-table th:nth-child(4),
+#po-items-table td:nth-child(4) { width: 25%; }
+
+#grn-items-table th:nth-child(1),
+#grn-items-table td:nth-child(1) { width: 40%; }
+#grn-items-table th:nth-child(2),
+#grn-items-table td:nth-child(2) { width: 20%; }
+#grn-items-table th:nth-child(3),
+#grn-items-table td:nth-child(3) { width: 20%; }
+#grn-items-table th:nth-child(4),
+#grn-items-table td:nth-child(4) { width: 20%; }
+
 #po-items-table input,
 #po-items-table select,
 #grn-items-table input {
-  width: auto;
-  max-width: 140px;
-}
-
-#po-items-table td,
-#grn-items-table td {
-  white-space: nowrap;
+  display: block;
+  width: 95%;
+  max-width: none;
+  box-sizing: border-box;
 }
