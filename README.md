@@ -168,8 +168,9 @@ A GRN body looks like:
 {
   "grnNumber": "GRN-2001",
   "purchaseOrder": { "id": 4 },
+  "location": { "id": 1 },
   "receivedDate": "2026-08-05",
-  "receivedBy": "Warehouse staff",
+  "receivedBy": { "id": 2 },
   "items": [
     { "purchaseOrderItem": { "id": 12 }, "receivedQuantity": 30 }
   ]
@@ -179,11 +180,51 @@ A GRN body looks like:
 Rules enforced by `GoodsReceivedNoteServiceImpl`:
 - Can't receive against a `CANCELLED` or already fully `RECEIVED` purchase order.
 - Can't receive more of an item than is still outstanding on the PO (`OverReceiptException` if you try).
-- Each accepted item immediately adds to the linked `Product.quantity` — this is the actual "goods entering the warehouse" stock update.
+- Each accepted item immediately credits the per-location `Inventory` ledger (see section 6 below) and keeps `Product.quantity` in sync as a running total across all locations.
 - After saving, the parent PO's status is recalculated (`PENDING` → `PARTIALLY_RECEIVED` → `RECEIVED`) based on how much of each line has now been received in total.
-- Deleting a GRN reverses everything it did: subtracts the quantity back out of stock, reduces the PO item's received-so-far count, and recalculates the PO's status again.
+- Deleting a GRN reverses everything it did: subtracts the quantity back out of stock (both `Inventory` and `Product.quantity`), reduces the PO item's received-so-far count, and recalculates the PO's status again.
 
-## 5. Project structure
+## 5. Assignment 03 upgrade — Users, Locations, Inventory, and Sales
+
+This adds the entities from the updated ER diagram: `Role`, `User`, `Location` (branch/warehouse), a proper per-location `Inventory` ledger, and a full Sales/Payment module (`SalesPaymentReceipt`, `SalesReceiptItem`, `Payment`). Same MVC layering as every other module.
+
+**Design decisions made to fill gaps the diagram didn't fully specify** (stated here so they're easy to explain if asked):
+- The diagram's `Inventory/Stock` table needs to know *which* location holds stock for a product, but `Goods Receipt`/`Goods Receipt Item` didn't show a location FK. A GRN has to specify where the goods physically arrived for the ledger to make sense, so `location` was added to `GoodsReceivedNote` (one location per whole delivery, not per line — a single delivery normally arrives at one place).
+- Same reasoning for Sales: `SalesPaymentReceipt` has a required `location` (which branch/register the sale happened at), needed so a sale can correctly decrease that location's stock.
+- `Product.quantity` (from Assignment 02) was **kept**, but is no longer the source of truth — it's now a denormalized running total kept in sync automatically every time `Inventory` changes, purely so the existing simple Product screens still show a sensible number without needing a rewrite.
+- `User.password` is stored as plain text. This upgrade only implements the **data structure** from the diagram (entities/relationships), not a login/authentication system — don't reuse this field as-is anywhere real passwords matter.
+
+### New endpoints
+
+| Method | Path | Notes |
+|---|---|---|
+| CRUD | `/api/roles` | Simple lookup table |
+| CRUD | `/api/locations` | Delete blocked (409) if the location still has `Inventory` rows |
+| CRUD | `/api/users` | Unique `username` and `email`; delete blocked (409) if the user is a cashier on any sales receipt |
+| GET | `/api/inventory`, `/api/inventory/product/{id}`, `/api/inventory/location/{id}` | Read-only — quantities only ever change via GRN or Sales, never edited directly |
+| POST, GET, DELETE | `/api/sales-receipts` | Create decreases stock per line (`InsufficientStockException` if not enough); delete reverses it |
+| POST, GET, DELETE | `/api/payments` | Records a payment against a receipt; blocks paying more than the remaining balance (`OverpaymentException`); marks the receipt `PAID` once fully covered |
+
+A Sales Receipt body looks like:
+```json
+{
+  "receiptNumber": "RCT-5001",
+  "cashier": { "id": 3 },
+  "location": { "id": 1 },
+  "discount": 50.00,
+  "paymentMethod": "CASH",
+  "items": [
+    { "product": { "id": 7 }, "quantity": 2, "unitPrice": 350.00 }
+  ]
+}
+```
+`subtotal` and `totalAmount` are always calculated server-side from `quantity × unitPrice` (minus discount) rather than trusted from the client, same principle as everywhere else in this codebase.
+
+`PurchaseOrder` also gained optional `createdBy` and `approvedBy` `User` links (per the diagram), resolved the same trusted-lookup-by-id way as every other relationship in the app.
+
+**Frontend:** Role, Location, and User have basic Add/Edit/Delete screens (needed so the GRN form's Location and "Received by" dropdowns have real data to select from). The Sales/Payment module currently has a working REST API only — no dedicated POS-style screen has been built for it yet.
+
+## 6. Project structure
 
 ```
 src/main/java/com/bci/productcrud/

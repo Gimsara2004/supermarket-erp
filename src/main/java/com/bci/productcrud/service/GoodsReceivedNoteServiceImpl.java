@@ -6,10 +6,12 @@ import com.bci.productcrud.exception.InvalidPurchaseOrderStatusException;
 import com.bci.productcrud.exception.OverReceiptException;
 import com.bci.productcrud.model.GoodsReceivedNote;
 import com.bci.productcrud.model.GrnItem;
+import com.bci.productcrud.model.Location;
 import com.bci.productcrud.model.Product;
 import com.bci.productcrud.model.PurchaseOrder;
 import com.bci.productcrud.model.PurchaseOrderItem;
 import com.bci.productcrud.model.PurchaseOrderStatus;
+import com.bci.productcrud.model.User;
 import com.bci.productcrud.repository.GoodsReceivedNoteRepository;
 import com.bci.productcrud.repository.ProductRepository;
 import com.bci.productcrud.repository.PurchaseOrderRepository;
@@ -26,15 +28,24 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final ProductRepository productRepository;
     private final PurchaseOrderService purchaseOrderService;
+    private final LocationService locationService;
+    private final UserService userService;
+    private final InventoryService inventoryService;
 
     public GoodsReceivedNoteServiceImpl(GoodsReceivedNoteRepository goodsReceivedNoteRepository,
                                          PurchaseOrderRepository purchaseOrderRepository,
                                          ProductRepository productRepository,
-                                         PurchaseOrderService purchaseOrderService) {
+                                         PurchaseOrderService purchaseOrderService,
+                                         LocationService locationService,
+                                         UserService userService,
+                                         InventoryService inventoryService) {
         this.goodsReceivedNoteRepository = goodsReceivedNoteRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.productRepository = productRepository;
         this.purchaseOrderService = purchaseOrderService;
+        this.locationService = locationService;
+        this.userService = userService;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -55,11 +66,15 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
             throw new InvalidPurchaseOrderStatusException("Purchase order " + po.getPoNumber() + " has already been fully received.");
         }
 
+        Location location = resolveLocation(request.getLocation());
+        User receivedBy = resolveOptionalUser(request.getReceivedBy());
+
         GoodsReceivedNote grn = new GoodsReceivedNote();
         grn.setGrnNumber(request.getGrnNumber());
         grn.setPurchaseOrder(po);
+        grn.setLocation(location);
         grn.setReceivedDate(request.getReceivedDate());
-        grn.setReceivedBy(request.getReceivedBy());
+        grn.setReceivedBy(receivedBy);
 
         for (GrnItem itemRequest : request.getItems()) {
             if (itemRequest.getPurchaseOrderItem() == null || itemRequest.getPurchaseOrderItem().getId() == null) {
@@ -85,8 +100,10 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
             // Update the PO line's received-so-far count.
             poItem.setReceivedQuantity(alreadyReceived + newlyReceived);
 
-            // The actual stock effect: goods physically arrived, so add to inventory.
+            // The actual stock effect: goods physically arrived at this location.
             Product product = poItem.getProduct();
+            inventoryService.increase(product, location, newlyReceived);
+            // Keep the Product's aggregate quantity (used by the simple Product screens) in sync too.
             product.setQuantity(product.getQuantity() + newlyReceived);
             productRepository.save(product);
 
@@ -122,7 +139,7 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
         // Only the descriptive fields can be corrected after the fact.
         GoodsReceivedNote grn = findById(id);
         grn.setReceivedDate(request.getReceivedDate());
-        grn.setReceivedBy(request.getReceivedBy());
+        grn.setReceivedBy(resolveOptionalUser(request.getReceivedBy()));
         return goodsReceivedNoteRepository.save(grn);
     }
 
@@ -137,6 +154,7 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
             poItem.setReceivedQuantity(poItem.getReceivedQuantity() - grnItem.getReceivedQuantity());
 
             Product product = poItem.getProduct();
+            inventoryService.decrease(product, grn.getLocation(), grnItem.getReceivedQuantity());
             product.setQuantity(Math.max(0, product.getQuantity() - grnItem.getReceivedQuantity()));
             productRepository.save(product);
         }
@@ -161,5 +179,19 @@ public class GoodsReceivedNoteServiceImpl implements GoodsReceivedNoteService {
         } else {
             po.setStatus(PurchaseOrderStatus.PENDING);
         }
+    }
+
+    private Location resolveLocation(Location requested) {
+        if (requested == null || requested.getId() == null) {
+            throw new IllegalArgumentException("A location must be selected for this GRN");
+        }
+        return locationService.findById(requested.getId());
+    }
+
+    private User resolveOptionalUser(User requested) {
+        if (requested == null || requested.getId() == null) {
+            return null;
+        }
+        return userService.findById(requested.getId());
     }
 }

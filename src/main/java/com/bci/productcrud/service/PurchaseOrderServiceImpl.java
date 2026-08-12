@@ -9,6 +9,7 @@ import com.bci.productcrud.model.PurchaseOrder;
 import com.bci.productcrud.model.PurchaseOrderItem;
 import com.bci.productcrud.model.PurchaseOrderStatus;
 import com.bci.productcrud.model.Supplier;
+import com.bci.productcrud.model.User;
 import com.bci.productcrud.repository.GoodsReceivedNoteRepository;
 import com.bci.productcrud.repository.PurchaseOrderRepository;
 import org.springframework.stereotype.Service;
@@ -24,15 +25,18 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     private final GoodsReceivedNoteRepository goodsReceivedNoteRepository;
     private final SupplierService supplierService;
     private final ProductService productService;
+    private final UserService userService;
 
     public PurchaseOrderServiceImpl(PurchaseOrderRepository purchaseOrderRepository,
                                      GoodsReceivedNoteRepository goodsReceivedNoteRepository,
                                      SupplierService supplierService,
-                                     ProductService productService) {
+                                     ProductService productService,
+                                     UserService userService) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.goodsReceivedNoteRepository = goodsReceivedNoteRepository;
         this.supplierService = supplierService;
         this.productService = productService;
+        this.userService = userService;
     }
 
     @Override
@@ -46,6 +50,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         po.setSupplier(resolveSupplier(request.getSupplier()));
         po.setOrderDate(request.getOrderDate());
         po.setNotes(request.getNotes());
+        po.setCreatedBy(resolveOptionalUser(request.getCreatedBy()));
+        po.setApprovedBy(resolveOptionalUser(request.getApprovedBy()));
         po.setStatus(PurchaseOrderStatus.PENDING);
 
         for (PurchaseOrderItem itemRequest : request.getItems()) {
@@ -86,6 +92,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         if (request.getStatus() == PurchaseOrderStatus.CANCELLED) {
             po.setStatus(PurchaseOrderStatus.CANCELLED);
             po.setNotes(request.getNotes());
+            po.setApprovedBy(resolveOptionalUser(request.getApprovedBy()));
             return purchaseOrderRepository.save(po);
         }
 
@@ -105,6 +112,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         po.setSupplier(resolveSupplier(request.getSupplier()));
         po.setOrderDate(request.getOrderDate());
         po.setNotes(request.getNotes());
+        po.setApprovedBy(resolveOptionalUser(request.getApprovedBy()));
 
         po.getItems().clear();
         for (PurchaseOrderItem itemRequest : request.getItems()) {
@@ -143,5 +151,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             throw new IllegalArgumentException("A product must be selected for every purchase order line item");
         }
         return productService.findById(requested.getId());
+    }
+
+    private User resolveOptionalUser(User requested) {
+        if (requested == null || requested.getId() == null) {
+            return null;
+        }
+        return userService.findById(requested.getId());
     }
 }

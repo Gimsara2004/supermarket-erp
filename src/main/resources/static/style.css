@@ -4,7 +4,7 @@ body {
   margin: 2rem auto;
   padding: 0 1rem;
   color: #1f2937;
-  background: #dff3ec;
+  background: #f4f7f6;
 }
 
 h1 {
@@ -25,11 +25,10 @@ h2 {
 
 section {
   margin-bottom: 2rem;
-  background: #f0faf7;
+  background: #ffffff;
   padding: 1.2rem 1.4rem;
   border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  border: 1px solid #bfe8db;
 }
 
 #scan-input {
@@ -57,10 +56,9 @@ form select {
   padding: 0.45rem 0.6rem;
   width: 260px;
   margin-top: 0.25rem;
-  border: 1px solid #9fd6c2;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 0.95rem;
-  background: #ffffff;
 }
 
 form input:focus,
@@ -101,8 +99,8 @@ td {
   font-size: 0.9rem;
 }
 
-tbody tr:nth-child(even) { background: #dff3ec; }
-tbody tr:hover { background: #c7ecdd; }
+tbody tr:nth-child(even) { background: #f0fdf4; }
+tbody tr:hover { background: #dcfce7; }
 
 button {
   cursor: pointer;
@@ -141,38 +139,3 @@ button[data-action="delete"] {
   background: #dc2626;
 }
 button[data-action="delete"]:hover { background: #b91c1c; }
-
-/* ---- PO / GRN item tables: fixed column widths so inputs don't stretch ---- */
-
-#po-items-table,
-#grn-items-table {
-  table-layout: fixed;
-  width: 100%;
-}
-
-#po-items-table th:nth-child(1),
-#po-items-table td:nth-child(1) { width: 45%; }
-#po-items-table th:nth-child(2),
-#po-items-table td:nth-child(2) { width: 15%; }
-#po-items-table th:nth-child(3),
-#po-items-table td:nth-child(3) { width: 15%; }
-#po-items-table th:nth-child(4),
-#po-items-table td:nth-child(4) { width: 25%; }
-
-#grn-items-table th:nth-child(1),
-#grn-items-table td:nth-child(1) { width: 40%; }
-#grn-items-table th:nth-child(2),
-#grn-items-table td:nth-child(2) { width: 20%; }
-#grn-items-table th:nth-child(3),
-#grn-items-table td:nth-child(3) { width: 20%; }
-#grn-items-table th:nth-child(4),
-#grn-items-table td:nth-child(4) { width: 20%; }
-
-#po-items-table input,
-#po-items-table select,
-#grn-items-table input {
-  display: block;
-  width: 95%;
-  max-width: none;
-  box-sizing: border-box;
-}

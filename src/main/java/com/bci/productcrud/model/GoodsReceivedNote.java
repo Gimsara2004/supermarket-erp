@@ -28,10 +28,19 @@ public class GoodsReceivedNote {
     @JoinColumn(name = "purchase_order_id", nullable = false)
     private PurchaseOrder purchaseOrder;
 
+    // The branch/warehouse the goods were physically received into.
+    // Needed so the per-location Inventory ledger knows which location to credit.
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
+
     @NotNull
     private LocalDate receivedDate;
 
-    private String receivedBy;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "received_by")
+    private User receivedBy;
 
     @NotEmpty
     @Valid
@@ -70,6 +79,14 @@ public class GoodsReceivedNote {
         this.purchaseOrder = purchaseOrder;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
     public LocalDate getReceivedDate() {
         return receivedDate;
     }
@@ -78,11 +95,11 @@ public class GoodsReceivedNote {
         this.receivedDate = receivedDate;
     }
 
-    public String getReceivedBy() {
+    public User getReceivedBy() {
         return receivedBy;
     }
 
-    public void setReceivedBy(String receivedBy) {
+    public void setReceivedBy(User receivedBy) {
         this.receivedBy = receivedBy;
     }
 

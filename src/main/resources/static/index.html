@@ -120,6 +120,85 @@
 
 <hr>
 
+<h1>Roles</h1>
+
+<section id="role-form-section">
+  <h2 id="role-form-title">Add role</h2>
+  <form id="role-form">
+    <input type="hidden" id="role-id">
+    <label>Name <input id="role-name" required></label>
+    <div>
+      <button type="submit">Save</button>
+      <button type="button" id="role-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="role-list-section">
+  <table>
+    <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+    <tbody id="role-table-body"></tbody>
+  </table>
+</section>
+
+<hr>
+
+<h1>Locations (Branches / Warehouses)</h1>
+
+<section id="location-form-section">
+  <h2 id="location-form-title">Add location</h2>
+  <form id="location-form">
+    <input type="hidden" id="location-id">
+    <label>Name <input id="location-name" required></label>
+    <label>Address <input id="location-address"></label>
+    <div>
+      <button type="submit">Save</button>
+      <button type="button" id="location-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="location-list-section">
+  <table>
+    <thead><tr><th>Name</th><th>Address</th><th>Actions</th></tr></thead>
+    <tbody id="location-table-body"></tbody>
+  </table>
+</section>
+
+<hr>
+
+<h1>Users</h1>
+
+<section id="user-form-section">
+  <h2 id="user-form-title">Add user</h2>
+  <form id="user-form">
+    <input type="hidden" id="user-id">
+    <label>Full name <input id="user-fullname" required></label>
+    <label>Username <input id="user-username" required></label>
+    <label>Password <input id="user-password" type="password"></label>
+    <label>Role
+      <select id="user-role-select" required>
+        <option value="">-- select role --</option>
+      </select>
+    </label>
+    <label>Email <input id="user-email" type="email" required></label>
+    <label>Contact no <input id="user-contact"></label>
+    <div>
+      <button type="submit">Save</button>
+      <button type="button" id="user-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="user-list-section">
+  <table>
+    <thead><tr><th>Full Name</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="user-table-body"></tbody>
+  </table>
+</section>
+
+<hr>
+
 <h1>Goods Received Notes (GRN)</h1>
 
 <section id="grn-form-section">
@@ -132,8 +211,17 @@
         <option value="">-- select purchase order --</option>
       </select>
     </label>
+    <label>Location (where goods arrived)
+      <select id="grn-location-select" required>
+        <option value="">-- select location --</option>
+      </select>
+    </label>
     <label>Received date <input id="grn-received-date" type="date" required></label>
-    <label>Received by <input id="grn-received-by"></label>
+    <label>Received by
+      <select id="grn-received-by-select">
+        <option value="">-- unspecified --</option>
+      </select>
+    </label>
 
     <h3>Items to receive</h3>
     <table id="grn-items-table">

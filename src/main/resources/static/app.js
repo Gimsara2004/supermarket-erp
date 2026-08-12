@@ -438,13 +438,306 @@ poTableBody.addEventListener('click', async (e) => {
 
 // ---------- Goods Received Notes ----------
 
+// ---------- Roles ----------
+
+const ROLE_API_URL = '/api/roles';
+const roleForm = document.getElementById('role-form');
+const roleFormTitle = document.getElementById('role-form-title');
+const roleIdField = document.getElementById('role-id');
+const roleNameField = document.getElementById('role-name');
+const roleCancelBtn = document.getElementById('role-cancel-btn');
+const roleTableBody = document.getElementById('role-table-body');
+
+let rolesCache = [];
+
+async function loadRoles() {
+  const res = await fetch(ROLE_API_URL);
+  rolesCache = await res.json();
+
+  roleTableBody.innerHTML = '';
+  rolesCache.forEach(role => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${role.name}</td>
+      <td>
+        <button data-action="edit" data-id="${role.id}">Edit</button>
+        <button data-action="delete" data-id="${role.id}">Delete</button>
+      </td>`;
+    roleTableBody.appendChild(tr);
+  });
+
+  populateUserRoleSelect();
+}
+
+function resetRoleForm() {
+  roleForm.reset();
+  roleIdField.value = '';
+  roleFormTitle.textContent = 'Add role';
+  roleCancelBtn.hidden = true;
+}
+
+roleForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = roleIdField.value;
+  const payload = { name: roleNameField.value.trim() };
+  const res = await fetch(id ? `${ROLE_API_URL}/${id}` : ROLE_API_URL, {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert(err.message || 'Request failed');
+    return;
+  }
+  resetRoleForm();
+  loadRoles();
+});
+
+roleCancelBtn.addEventListener('click', resetRoleForm);
+
+roleTableBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.dataset.id;
+
+  if (btn.dataset.action === 'edit') {
+    const role = rolesCache.find(r => String(r.id) === String(id));
+    roleIdField.value = role.id;
+    roleNameField.value = role.name;
+    roleFormTitle.textContent = `Edit role #${role.id}`;
+    roleCancelBtn.hidden = false;
+  }
+
+  if (btn.dataset.action === 'delete') {
+    if (!confirm('Delete this role?')) return;
+    const res = await fetch(`${ROLE_API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.message || 'Delete failed');
+      return;
+    }
+    loadRoles();
+  }
+});
+
+// ---------- Locations ----------
+
+const LOCATION_API_URL = '/api/locations';
+const locationForm = document.getElementById('location-form');
+const locationFormTitle = document.getElementById('location-form-title');
+const locationIdField = document.getElementById('location-id');
+const locationNameField = document.getElementById('location-name');
+const locationAddressField = document.getElementById('location-address');
+const locationCancelBtn = document.getElementById('location-cancel-btn');
+const locationTableBody = document.getElementById('location-table-body');
+
+let locationsCache = [];
+
+async function loadLocations() {
+  const res = await fetch(LOCATION_API_URL);
+  locationsCache = await res.json();
+
+  locationTableBody.innerHTML = '';
+  locationsCache.forEach(loc => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${loc.name}</td>
+      <td>${loc.address ?? ''}</td>
+      <td>
+        <button data-action="edit" data-id="${loc.id}">Edit</button>
+        <button data-action="delete" data-id="${loc.id}">Delete</button>
+      </td>`;
+    locationTableBody.appendChild(tr);
+  });
+
+  populateGrnLocationSelect();
+}
+
+function resetLocationForm() {
+  locationForm.reset();
+  locationIdField.value = '';
+  locationFormTitle.textContent = 'Add location';
+  locationCancelBtn.hidden = true;
+}
+
+locationForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = locationIdField.value;
+  const payload = { name: locationNameField.value.trim(), address: locationAddressField.value.trim() };
+  const res = await fetch(id ? `${LOCATION_API_URL}/${id}` : LOCATION_API_URL, {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert(err.message || 'Request failed');
+    return;
+  }
+  resetLocationForm();
+  loadLocations();
+});
+
+locationCancelBtn.addEventListener('click', resetLocationForm);
+
+locationTableBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.dataset.id;
+
+  if (btn.dataset.action === 'edit') {
+    const loc = locationsCache.find(l => String(l.id) === String(id));
+    locationIdField.value = loc.id;
+    locationNameField.value = loc.name;
+    locationAddressField.value = loc.address ?? '';
+    locationFormTitle.textContent = `Edit location #${loc.id}`;
+    locationCancelBtn.hidden = false;
+  }
+
+  if (btn.dataset.action === 'delete') {
+    if (!confirm('Delete this location?')) return;
+    const res = await fetch(`${LOCATION_API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.message || 'Delete failed');
+      return;
+    }
+    loadLocations();
+  }
+});
+
+// ---------- Users ----------
+
+const USER_API_URL = '/api/users';
+const userForm = document.getElementById('user-form');
+const userFormTitle = document.getElementById('user-form-title');
+const userIdField = document.getElementById('user-id');
+const userFullNameField = document.getElementById('user-fullname');
+const userUsernameField = document.getElementById('user-username');
+const userPasswordField = document.getElementById('user-password');
+const userRoleSelect = document.getElementById('user-role-select');
+const userEmailField = document.getElementById('user-email');
+const userContactField = document.getElementById('user-contact');
+const userCancelBtn = document.getElementById('user-cancel-btn');
+const userTableBody = document.getElementById('user-table-body');
+
+let usersCache = [];
+
+function populateUserRoleSelect() {
+  const current = userRoleSelect.value;
+  userRoleSelect.innerHTML = '<option value="">-- select role --</option>';
+  rolesCache.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = r.name;
+    userRoleSelect.appendChild(opt);
+  });
+  userRoleSelect.value = current;
+}
+
+async function loadUsers() {
+  const res = await fetch(USER_API_URL);
+  usersCache = await res.json();
+
+  userTableBody.innerHTML = '';
+  usersCache.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.fullName}</td>
+      <td>${u.username}</td>
+      <td>${u.role ? u.role.name : ''}</td>
+      <td>${u.email}</td>
+      <td>${u.status}</td>
+      <td>
+        <button data-action="edit" data-id="${u.id}">Edit</button>
+        <button data-action="delete" data-id="${u.id}">Delete</button>
+      </td>`;
+    userTableBody.appendChild(tr);
+  });
+
+  populateGrnReceivedBySelect();
+}
+
+function resetUserForm() {
+  userForm.reset();
+  userIdField.value = '';
+  userFormTitle.textContent = 'Add user';
+  userCancelBtn.hidden = true;
+}
+
+userForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = userIdField.value;
+  const payload = {
+    fullName: userFullNameField.value.trim(),
+    username: userUsernameField.value.trim(),
+    password: userPasswordField.value,
+    role: { id: parseInt(userRoleSelect.value, 10) },
+    email: userEmailField.value.trim(),
+    contactNo: userContactField.value.trim(),
+  };
+  if (!id && !payload.password) {
+    alert('Password is required when creating a new user');
+    return;
+  }
+  const res = await fetch(id ? `${USER_API_URL}/${id}` : USER_API_URL, {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert(err.message || 'Request failed');
+    return;
+  }
+  resetUserForm();
+  loadUsers();
+});
+
+userCancelBtn.addEventListener('click', resetUserForm);
+
+userTableBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.dataset.id;
+
+  if (btn.dataset.action === 'edit') {
+    const u = usersCache.find(x => String(x.id) === String(id));
+    userIdField.value = u.id;
+    userFullNameField.value = u.fullName;
+    userUsernameField.value = u.username;
+    userPasswordField.value = '';
+    userPasswordField.placeholder = 'Leave blank to keep current password';
+    userRoleSelect.value = u.role ? u.role.id : '';
+    userEmailField.value = u.email;
+    userContactField.value = u.contactNo ?? '';
+    userFormTitle.textContent = `Edit user #${u.id}`;
+    userCancelBtn.hidden = false;
+  }
+
+  if (btn.dataset.action === 'delete') {
+    if (!confirm('Delete this user?')) return;
+    const res = await fetch(`${USER_API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.message || 'Delete failed');
+      return;
+    }
+    loadUsers();
+  }
+});
+
+// ---------- Goods Received Notes ----------
+
 const grnForm = document.getElementById('grn-form');
 const grnFormTitle = document.getElementById('grn-form-title');
 const grnIdField = document.getElementById('grn-id');
 const grnNumberField = document.getElementById('grn-number');
 const grnPoSelect = document.getElementById('grn-po-select');
+const grnLocationSelect = document.getElementById('grn-location-select');
 const grnReceivedDateField = document.getElementById('grn-received-date');
-const grnReceivedByField = document.getElementById('grn-received-by');
+const grnReceivedBySelect = document.getElementById('grn-received-by-select');
 const grnItemsBody = document.getElementById('grn-items-body');
 const grnCancelBtn = document.getElementById('grn-cancel-btn');
 const grnTableBody = document.getElementById('grn-table-body');
@@ -464,6 +757,30 @@ function populateGrnPoSelect() {
       grnPoSelect.appendChild(opt);
     });
   grnPoSelect.value = current;
+}
+
+function populateGrnLocationSelect() {
+  const current = grnLocationSelect.value;
+  grnLocationSelect.innerHTML = '<option value="">-- select location --</option>';
+  locationsCache.forEach(loc => {
+    const opt = document.createElement('option');
+    opt.value = loc.id;
+    opt.textContent = loc.name;
+    grnLocationSelect.appendChild(opt);
+  });
+  grnLocationSelect.value = current;
+}
+
+function populateGrnReceivedBySelect() {
+  const current = grnReceivedBySelect.value;
+  grnReceivedBySelect.innerHTML = '<option value="">-- unspecified --</option>';
+  usersCache.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = u.fullName;
+    grnReceivedBySelect.appendChild(opt);
+  });
+  grnReceivedBySelect.value = current;
 }
 
 function buildGrnItemsFromPo(po) {
@@ -507,7 +824,7 @@ async function loadGrns() {
       <td>${grn.grnNumber}</td>
       <td>${grn.purchaseOrder ? grn.purchaseOrder.poNumber : ''}</td>
       <td>${grn.receivedDate}</td>
-      <td>${grn.receivedBy ?? ''}</td>
+      <td>${grn.receivedBy ? grn.receivedBy.fullName : ''}</td>
       <td>${grn.items.length} item(s)</td>
       <td>
         <button data-action="edit" data-id="${grn.id}">Edit</button>
@@ -522,6 +839,7 @@ function resetGrnForm() {
   grnIdField.value = '';
   grnItemsBody.innerHTML = '';
   grnPoSelect.disabled = false;
+  grnLocationSelect.disabled = false;
   editingGrnOriginal = null;
   grnFormTitle.textContent = 'Add GRN';
   grnCancelBtn.hidden = true;
@@ -534,8 +852,10 @@ function fillGrnForm(grn) {
   grnNumberField.value = grn.grnNumber;
   grnPoSelect.innerHTML = `<option value="${grn.purchaseOrder.id}" selected>${grn.purchaseOrder.poNumber}</option>`;
   grnPoSelect.disabled = true; // the PO a GRN was raised against can't be changed after the fact
+  grnLocationSelect.value = grn.location ? grn.location.id : '';
+  grnLocationSelect.disabled = true; // the location goods were received into can't be changed after the fact either
   grnReceivedDateField.value = grn.receivedDate;
-  grnReceivedByField.value = grn.receivedBy ?? '';
+  grnReceivedBySelect.value = grn.receivedBy ? grn.receivedBy.id : '';
 
   grnItemsBody.innerHTML = '';
   grn.items.forEach(item => {
@@ -562,8 +882,9 @@ grnForm.addEventListener('submit', async (e) => {
     payload = {
       grnNumber: grnNumberField.value.trim(),
       purchaseOrder: { id: editingGrnOriginal.purchaseOrder.id },
+      location: { id: editingGrnOriginal.location.id },
       receivedDate: grnReceivedDateField.value,
-      receivedBy: grnReceivedByField.value.trim(),
+      receivedBy: grnReceivedBySelect.value ? { id: parseInt(grnReceivedBySelect.value, 10) } : null,
       items: editingGrnOriginal.items.map(i => ({
         purchaseOrderItem: { id: i.purchaseOrderItem.id },
         receivedQuantity: i.receivedQuantity,
@@ -575,11 +896,16 @@ grnForm.addEventListener('submit', async (e) => {
       alert('Enter a quantity greater than 0 for at least one item');
       return;
     }
+    if (!grnLocationSelect.value) {
+      alert('Select a location for this GRN');
+      return;
+    }
     payload = {
       grnNumber: grnNumberField.value.trim(),
       purchaseOrder: { id: parseInt(grnPoSelect.value, 10) },
+      location: { id: parseInt(grnLocationSelect.value, 10) },
       receivedDate: grnReceivedDateField.value,
-      receivedBy: grnReceivedByField.value.trim(),
+      receivedBy: grnReceivedBySelect.value ? { id: parseInt(grnReceivedBySelect.value, 10) } : null,
       items,
     };
   }
@@ -637,8 +963,14 @@ populateSupplierSelect = function () {
 
 // ---------- Initial load ----------
 resetPoForm();
+resetRoleForm();
+resetLocationForm();
+resetUserForm();
 resetGrnForm();
 loadSuppliers()
   .then(loadProducts)
   .then(loadPurchaseOrders)
+  .then(loadRoles)
+  .then(loadLocations)
+  .then(loadUsers)
   .then(loadGrns);
