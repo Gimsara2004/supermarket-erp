@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Supermarket ERP</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav id="top-nav">
+  <a href="#products-section">Products</a>
+  <a href="#suppliers-section">Suppliers</a>
+  <a href="#locations-section">Locations</a>
+  <a href="#inventory-section">Inventory</a>
+  <a href="#roles-section">Roles</a>
+  <a href="#users-section">Users</a>
+  <a href="#po-section">Purchase Orders</a>
+  <a href="#grn-section">GRNs</a>
+  <a href="#pos-section">Sales / POS</a>
+  <a href="#payments-section">Payments</a>
+</nav>
+
+<div id="products-section">
+<h1>Products</h1>
+
+<section id="scan-section">
+  <label for="scan-input">Scan barcode:</label>
+  <input id="scan-input" type="text" autofocus placeholder="Focus here and scan...">
+  <span id="scan-status"></span>
+</section>
+
+<section id="form-section">
+  <h2 id="form-title">Add product</h2>
+  <form id="product-form">
+    <input type="hidden" id="product-id">
+    <label>Barcode <input id="barcode" required></label>
+    <label>Name <input id="name" required></label>
+    <label>Description <input id="description"></label>
+    <label>Category <input id="category"></label>
+    <label>Brand <input id="brand"></label>
+    <label>Size <input id="size" placeholder="e.g. 500ml, 1kg, XL"></label>
+    <label>Color <input id="color"></label>
+    <label>Purchase price <input id="purchase-price" type="number" step="0.01" min="0" required></label>
+    <label>Selling price <input id="selling-price" type="number" step="0.01" min="0" required></label>
+    <label>Status
+      <select id="product-status-select">
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="DISCONTINUED">DISCONTINUED</option>
+        <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
+      </select>
+    </label>
+    <label>Supplier
+      <select id="supplier-select">
+        <option value="">-- none --</option>
+      </select>
+    </label>
+    <button type="submit" id="submit-btn">Save</button>
+    <button type="button" id="cancel-btn" hidden>Cancel</button>
+  </form>
+  <p class="hint">Stock is managed per-location under the <a href="#inventory-section">Inventory</a> section (via GRNs, sales, or manual adjustment) - it's no longer set here.</p>
+</section>
+
+<section id="list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>Barcode</th><th>Name</th><th>Category</th><th>Brand</th><th>Size</th><th>Color</th><th>Purchase Price</th><th>Selling Price</th><th>Status</th><th>Total Stock</th><th>Supplier</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="product-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="suppliers-section">
+<h1>Suppliers</h1>
+
+<section id="supplier-form-section">
+  <h2 id="supplier-form-title">Add supplier</h2>
+  <form id="supplier-form">
+    <input type="hidden" id="supplier-id">
+    <label>Name <input id="supplier-name" required></label>
+    <label>Contact person <input id="supplier-contact" required></label>
+    <label>Phone <input id="supplier-phone" required></label>
+    <label>Email <input id="supplier-email" type="email" required></label>
+    <label>Address <input id="supplier-address"></label>
+    <label>Bank details <input id="supplier-bank-details" placeholder="Account no / bank / branch"></label>
+    <label>Status
+      <select id="supplier-status-select">
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+        <option value="BLACKLISTED">BLACKLISTED</option>
+      </select>
+    </label>
+    <button type="submit" id="supplier-submit-btn">Save</button>
+    <button type="button" id="supplier-cancel-btn" hidden>Cancel</button>
+  </form>
+</section>
+
+<section id="supplier-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Contact person</th><th>Phone</th><th>Email</th><th>Address</th><th>Bank details</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="supplier-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="locations-section">
+<h1>Locations (Branch / Store / Warehouse)</h1>
+
+<section id="location-form-section">
+  <h2 id="location-form-title">Add location</h2>
+  <form id="location-form">
+    <input type="hidden" id="location-id">
+    <label>Location name <input id="location-name" required></label>
+    <label>Address <input id="location-address"></label>
+    <button type="submit" id="location-submit-btn">Save</button>
+    <button type="button" id="location-cancel-btn" hidden>Cancel</button>
+  </form>
+</section>
+
+<section id="location-list-section">
+  <table>
+    <thead>
+      <tr><th>Location name</th><th>Address</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="location-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="inventory-section">
+<h1>Inventory / Stock</h1>
+
+<section id="inventory-adjust-section">
+  <h2>Adjust stock (manual stock-take / correction)</h2>
+  <form id="inventory-form">
+    <label>Product
+      <select id="inventory-product-select" required>
+        <option value="">-- select product --</option>
+      </select>
+    </label>
+    <label>Location
+      <select id="inventory-location-select" required>
+        <option value="">-- select location --</option>
+      </select>
+    </label>
+    <label>Quantity on hand <input id="inventory-quantity" type="number" min="0" required></label>
+    <button type="submit" id="inventory-submit-btn">Save quantity</button>
+  </form>
+</section>
+
+<section id="inventory-list-section">
+  <table>
+    <thead>
+      <tr><th>Product</th><th>Location</th><th>Quantity on hand</th><th>Last updated</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="inventory-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="roles-section">
+<h1>Roles</h1>
+
+<section id="role-form-section">
+  <h2 id="role-form-title">Add role</h2>
+  <form id="role-form">
+    <input type="hidden" id="role-id">
+    <label>Role name <input id="role-name" required placeholder="e.g. ADMIN, MANAGER, CASHIER"></label>
+    <button type="submit" id="role-submit-btn">Save</button>
+    <button type="button" id="role-cancel-btn" hidden>Cancel</button>
+  </form>
+</section>
+
+<section id="role-list-section">
+  <table>
+    <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+    <tbody id="role-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="users-section">
+<h1>Users</h1>
+
+<section id="user-form-section">
+  <h2 id="user-form-title">Add user</h2>
+  <form id="user-form">
+    <input type="hidden" id="user-id">
+    <label>Full name <input id="user-fullname" required></label>
+    <label>Username <input id="user-username" required></label>
+    <label>Password <input id="user-password" type="password" placeholder="(leave blank to keep unchanged when editing)"></label>
+    <label>Role
+      <select id="user-role-select" required>
+        <option value="">-- select role --</option>
+      </select>
+    </label>
+    <label>Email <input id="user-email" type="email"></label>
+    <label>Contact no <input id="user-contact"></label>
+    <label>Status
+      <select id="user-status-select">
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+      </select>
+    </label>
+    <button type="submit" id="user-submit-btn">Save</button>
+    <button type="button" id="user-cancel-btn" hidden>Cancel</button>
+  </form>
+</section>
+
+<section id="user-list-section">
+  <table>
+    <thead>
+      <tr><th>Full name</th><th>Username</th><th>Role</th><th>Email</th><th>Contact</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="user-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="po-section">
+<h1>Purchase Orders</h1>
+
+<section id="po-form-section">
+  <h2 id="po-form-title">Add purchase order</h2>
+  <form id="po-form">
+    <input type="hidden" id="po-id">
+    <label>PO Number <input id="po-number" required></label>
+    <label>Supplier
+      <select id="po-supplier-select" required>
+        <option value="">-- select supplier --</option>
+      </select>
+    </label>
+    <label>Order date <input id="po-order-date" type="date" required></label>
+    <label>Created by
+      <select id="po-created-by-select">
+        <option value="">-- none --</option>
+      </select>
+    </label>
+    <label>Approved by
+      <select id="po-approved-by-select">
+        <option value="">-- none --</option>
+      </select>
+    </label>
+    <label>Notes <input id="po-notes"></label>
+
+    <h3>Items</h3>
+    <table id="po-items-table">
+      <thead>
+        <tr><th>Product</th><th>Ordered Qty</th><th>Unit Price</th><th></th></tr>
+      </thead>
+      <tbody id="po-items-body"></tbody>
+    </table>
+    <button type="button" id="po-add-item-btn">+ Add item</button>
+
+    <div>
+      <button type="submit" id="po-submit-btn">Save</button>
+      <button type="button" id="po-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="po-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>PO Number</th><th>Supplier</th><th>Order Date</th><th>Status</th><th>Total</th><th>Created by</th><th>Approved by</th><th>Items</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="po-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="grn-section">
+<h1>Goods Received Notes (GRN)</h1>
+
+<section id="grn-form-section">
+  <h2 id="grn-form-title">Add GRN</h2>
+  <form id="grn-form">
+    <input type="hidden" id="grn-id">
+    <label>GRN Number <input id="grn-number" required></label>
+    <label>Purchase Order
+      <select id="grn-po-select" required>
+        <option value="">-- select purchase order --</option>
+      </select>
+    </label>
+    <label>Receiving location
+      <select id="grn-location-select" required>
+        <option value="">-- select location --</option>
+      </select>
+    </label>
+    <label>Received date <input id="grn-received-date" type="date" required></label>
+    <label>Received by
+      <select id="grn-received-by-select">
+        <option value="">-- none --</option>
+      </select>
+    </label>
+
+    <h3>Items to receive</h3>
+    <table id="grn-items-table">
+      <thead>
+        <tr><th>Product</th><th>Ordered</th><th>Already received</th><th>Receive now</th></tr>
+      </thead>
+      <tbody id="grn-items-body"></tbody>
+    </table>
+
+    <div>
+      <button type="submit" id="grn-submit-btn">Save</button>
+      <button type="button" id="grn-cancel-btn" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<section id="grn-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>GRN Number</th><th>PO Number</th><th>Location</th><th>Received Date</th><th>Received By</th><th>Items</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="grn-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="pos-section">
+<h1>Sales / Point of Sale</h1>
+
+<section id="sale-form-section">
+  <h2>New sale</h2>
+  <form id="sale-form">
+    <label>Cashier
+      <select id="sale-cashier-select" required>
+        <option value="">-- select cashier --</option>
+      </select>
+    </label>
+    <label>Location
+      <select id="sale-location-select" required>
+        <option value="">-- select location --</option>
+      </select>
+    </label>
+    <label>Payment method
+      <select id="sale-payment-method-select">
+        <option value="CASH">CASH</option>
+        <option value="CARD">CARD</option>
+        <option value="MOBILE">MOBILE</option>
+      </select>
+    </label>
+    <label>Discount <input id="sale-discount" type="number" step="0.01" min="0" value="0"></label>
+
+    <h3>Items</h3>
+    <table id="sale-items-table">
+      <thead>
+        <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th></th></tr>
+      </thead>
+      <tbody id="sale-items-body"></tbody>
+    </table>
+    <button type="button" id="sale-add-item-btn">+ Add item</button>
+
+    <div>
+      <button type="submit" id="sale-submit-btn">Complete sale</button>
+    </div>
+  </form>
+</section>
+
+<section id="sale-list-section">
+  <table>
+    <thead>
+      <tr>
+        <th>Receipt #</th><th>Cashier</th><th>Location</th><th>Total</th><th>Discount</th><th>Payment</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="sale-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<hr>
+
+<div id="payments-section">
+<h1>Payments</h1>
+
+<section id="payment-form-section">
+  <h2>Record a payment</h2>
+  <form id="payment-form">
+    <label>Sales receipt (invoice)
+      <select id="payment-receipt-select" required>
+        <option value="">-- select receipt --</option>
+      </select>
+    </label>
+    <label>Payment method
+      <select id="payment-method-select">
+        <option value="CASH">CASH</option>
+        <option value="CARD">CARD</option>
+        <option value="MOBILE">MOBILE</option>
+      </select>
+    </label>
+    <label>Amount <input id="payment-amount" type="number" step="0.01" min="0" required></label>
+    <button type="submit" id="payment-submit-btn">Save payment</button>
+  </form>
+</section>
+
+<section id="payment-list-section">
+  <table>
+    <thead>
+      <tr><th>Receipt #</th><th>Method</th><th>Amount</th><th>Paid at</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="payment-table-body"></tbody>
+  </table>
+</section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
